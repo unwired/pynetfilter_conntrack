@@ -21,21 +21,21 @@ def raw2long(data, big_endian):
     True
     >>> raw2long("\x2a\x10", False) == 0x102a
     True
-    >>> raw2long("\xff\x14\x2a\x10", True) == 0xff142a10L
+    >>> raw2long("\xff\x14\x2a\x10", True) == 0xff142a10
     True
     >>> raw2long("\x00\x01\x02\x03", False) == 0x3020100
     True
-    >>> raw2long("\xff\x14\x2a\x10\xab\x00\xd9\x0e", True) == 0xff142a10ab00d90eL
+    >>> raw2long("\xff\x14\x2a\x10\xab\x00\xd9\x0e", True) == 0xff142a10ab00d90e
     True
     >>> raw2long("\xff\xff\xff\xff\xff\xff\xff\xfe", True) == (2**64-2)
     True
     """
     assert 1 <= len(data) <= 16   # arbitrary limit: 8..128 bits
     if big_endian:
-        INDEXES = xrange(len(data)-1,-1,-1)
+        INDEXES = range(len(data)-1,-1,-1)
     else:
-        INDEXES = xrange(len(data))
-    shift = 0L
+        INDEXES = range(len(data))
+    shift = 0
     value = 0
     for index in INDEXES:
         byte = ord(data[index])
@@ -60,7 +60,7 @@ def __int16_to_uint16_old(n):
 
 def __int32_to_uint32_old(n):
     if n < 0:
-        return 0x100000000L + n
+        return 0x100000000 + n
     else:
         return long(n)
 
@@ -68,7 +68,7 @@ def __int16_to_uint16_new(n):
     return n & 0xFFFF
 
 def __int32_to_uint32_new(n):
-    return n & 0xFFFFFFFFL
+    return n & 0xFFFFFFFF
 
 if hexversion < 0x2040000:
     int16_to_uint16 = __int16_to_uint16_old
@@ -90,9 +90,9 @@ int32_to_uint32.__doc__ = """Convert a 32 bits signed integer to unsigned intege
 Examples:
 
 >>> int32_to_uint32(1062723156)
-1062723156L
+1062723156
 >>> int32_to_uint32(-1062723156)
-3232244140L
+3232244140
 """
 
 __all__ = ("raw2long", "ctypes_ptr2uint", "int16_to_uint16", "int32_to_uint32")

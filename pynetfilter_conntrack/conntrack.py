@@ -9,7 +9,7 @@ from socket import AF_INET
 try:
     from cnetfilter_conntrack import dump_table_ipv4
     HAS_CNETFILTER_CONNTRACK = True
-except ImportError, err:
+except ImportError as err:
     HAS_CNETFILTER_CONNTRACK = False
 from IPy import IP
 

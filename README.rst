@@ -7,6 +7,11 @@ pynetfilter_conntrack is a Python binding of this library.  The binding is the
 file pynetfilter_conntrack.py and you have also a clone of conntrack program:
 conntrack.py.
 
+differences in this fork
+========================
+
+This fork contains several python3 fixes.
+
 conntrack.py
 ============
 
