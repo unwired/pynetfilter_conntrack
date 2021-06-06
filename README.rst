@@ -10,7 +10,9 @@ conntrack.py.
 differences in this fork
 ========================
 
-This fork contains several python3 fixes.
+This fork contains several python3 fixes. More specifically:
+- fixes for python 3.6+
+- fix to use correct pointer type to prevent segfault on alpine linux docker containers (and other platforms where the same issue happens)
 
 conntrack.py
 ============
