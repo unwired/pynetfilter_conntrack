@@ -78,12 +78,14 @@ class ConntrackEntry(EntryBase):
             raise AttributeError("ConntrackEntry object has no attribute '%s'" % name)
         if hton and name not in ("mark", "timeout", "status"):
             value = hton(value)
+        print(f"_setAttr: name {name}, attrid {attrid}, value {value}, handle {self._handle}")
         setter(self._handle, attrid, value)
         return value
 
     def __setattr__(self, name, value):
         if name in ATTRIBUTES:
             python_value = value
+            print(f"__setattr__: {name}, {value}, {python_value}, {ATTRIBUTES[name]}")
             if name in IP_ATTRIBUTES:
                 if isinstance(value, IP):
                     value = value.int()
