@@ -28,8 +28,8 @@ GETTER = {
     128: nfct_get_attr,
 }
 SETTER = {
-      8: nfct_set_attr_u8,
-     16: nfct_set_attr_u16,
+      8: nfct_set_attr_u32,
+     16: nfct_set_attr_u32,
      32: nfct_set_attr_u32,
      64: nfct_set_attr,
     128: nfct_set_attr,
