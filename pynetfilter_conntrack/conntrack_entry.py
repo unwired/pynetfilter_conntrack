@@ -13,6 +13,9 @@ from socket import ntohs, ntohl, htons, htonl
 from IPy import IP
 from pynetfilter_conntrack.entry_base import EntryBase, BUFFER_SIZE
 
+import logging
+logger = logging.getLogger(__name__)
+
 IP_ATTRIBUTES = set((
     "orig_ipv4_src", "orig_ipv4_dst",
     "repl_ipv4_src", "repl_ipv4_dst",
@@ -78,20 +81,20 @@ class ConntrackEntry(EntryBase):
             raise AttributeError("ConntrackEntry object has no attribute '%s'" % name)
         if hton and name not in ("mark", "timeout", "status"):
             value = hton(value)
-        print(f"_setAttr: name {name}, attrid {attrid}, value {value}, handle {self._handle}")
+        logger.debug(f"_setAttr: name {name}, attrid {attrid}, value {value}, handle {self._handle}")
         setter(self._handle, attrid, value)
         return value
 
     def __setattr__(self, name, value):
         if name in ATTRIBUTES:
             python_value = value
-            print(f"__setattr__: {name}, {value}, {python_value}, {ATTRIBUTES[name]}")
             if name in IP_ATTRIBUTES:
                 if isinstance(value, IP):
                     value = value.int()
                 else:
                     python_value = IP(value, ipversion=4)
             self._attr[name] = python_value
+            logger.debug(f"__setattr__: {name}, {value}, {python_value}, {ATTRIBUTES[name]}")
             self._setAttr(name, value)
         elif name.startswith('_'):
             object.__setattr__(self, name, value)
