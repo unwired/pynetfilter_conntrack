@@ -4,7 +4,7 @@ from pynetfilter_conntrack import \
     nfct_set_attr, nfct_set_attr_u8, nfct_set_attr_u16, nfct_set_attr_u32,\
     nfct_setobjopt,\
     NFCT_O_DEFAULT, NFCT_OF_SHOW_LAYER3,\
-    ATTRIBUTES, NFCT_Q_UPDATE, \
+    ATTRIBUTES, NFCT_Q_UPDATE, NFCT_Q_GET, \
     NFCT_Q_DESTROY, NFCT_MARK, \
     nfct_conntrack_compare_t, nfct_conntrack_compare,\
     ctypes_ptr2uint, int16_to_uint16, int32_to_uint32
@@ -136,6 +136,9 @@ class ConntrackEntry(EntryBase):
 
     def update(self):
         self.query(NFCT_Q_UPDATE)
+
+    def get(self):
+        self.query(NFCT_Q_GET)
 
     def setobjopt(self, option):
         nfct_setobjopt(self._handle, option)
