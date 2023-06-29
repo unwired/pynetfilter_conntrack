@@ -8,10 +8,12 @@ from pynetfilter_conntrack import \
     NFCT_Q_DESTROY, NFCT_MARK, \
     nfct_conntrack_compare_t, nfct_conntrack_compare,\
     ctypes_ptr2uint, int16_to_uint16, int32_to_uint32
-from ctypes import create_string_buffer
+from ctypes import create_string_buffer, c_uint64, string_at, Structure
 from socket import ntohs, ntohl, htons, htonl
 from IPy import IP
 from pynetfilter_conntrack.entry_base import EntryBase, BUFFER_SIZE
+
+import struct
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,6 +21,9 @@ logger = logging.getLogger(__name__)
 IP_ATTRIBUTES = set((
     "orig_ipv4_src", "orig_ipv4_dst",
     "repl_ipv4_src", "repl_ipv4_dst",
+))
+
+IP6_ATTRIBUTES = set((
     "orig_ipv6_src", "orig_ipv6_dst",
     "repl_ipv6_src", "repl_ipv6_dst",
 ))
@@ -39,6 +44,15 @@ SETTER = {
 }
 
 HTON = {8: None, 16: htons, 32: htonl, 64: None, 128: None}
+class CTYPE_IPv6(Structure):
+    _fields_ = [
+        ("high", c_uint64),
+        ("low", c_uint64)
+    ]
+
+    def int(self):
+        as_int = (self.high << 64) | self.low
+        return as_int
 
 class ConntrackEntry(EntryBase):
     @staticmethod
@@ -58,8 +72,12 @@ class ConntrackEntry(EntryBase):
         except KeyError:
             raise AttributeError("ConntrackEntry object has no attribute '%s'" % name)
         value = getter(self._handle, attrid)
-        if 32 < nbits:
-            return ctypes_ptr2uint(value, nbits//8)
+        if nbits == 128:
+            value = string_at(value, nbits//8)
+            high,low = struct.unpack('!QQ', value)
+            value = (high << 64) | low
+        elif 32 < nbits:
+            value = ctypes_ptr2uint(value, nbits//8)
 
         if nbits in (16, 32) and name not in ("mark", "timeout", "status"):
             if nbits == 16:
@@ -70,6 +88,8 @@ class ConntrackEntry(EntryBase):
                 value = int32_to_uint32(value)
         if name in IP_ATTRIBUTES:
             value = IP(value, ipversion=4)
+        elif name in IP6_ATTRIBUTES:
+            value = IP(value, ipversion=6)
         return value
 
     def _setAttr(self, name, value):
@@ -81,6 +101,15 @@ class ConntrackEntry(EntryBase):
             raise AttributeError("ConntrackEntry object has no attribute '%s'" % name)
         if hton and name not in ("mark", "timeout", "status"):
             value = hton(value)
+        if nbits == 64:
+            value = pointer(c_uint64(value))
+        elif nbits == 128:
+            # When we want to set an object of 128 bits, send it in as network byte order struct with two 64-bit components
+            # Use this as long as c_uint128 is not available
+            part1 = value >> 64
+            part2 = value & 0xffffffffffffffff
+            logger.debug(f"values are {hex(value)} {hex(part1)} {hex(part2)}")
+            value = struct.pack('!QQ', part1, part2)
         logger.debug(f"_setAttr: name {name}, attrid {attrid}, value {value}, handle {self._handle}")
         setter(self._handle, attrid, value)
         return value
@@ -93,6 +122,11 @@ class ConntrackEntry(EntryBase):
                     value = value.int()
                 else:
                     python_value = IP(value, ipversion=4)
+            elif name in IP6_ATTRIBUTES:
+                if isinstance(value, IP):
+                    value = value.int()
+                else:
+                    python_value = IP(value, ipversion=6)
             self._attr[name] = python_value
             logger.debug(f"__setattr__: {name}, {value}, {python_value}, {ATTRIBUTES[name]}")
             self._setAttr(name, value)
