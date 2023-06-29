@@ -132,16 +132,21 @@ def test_create_a_lot_of_ipv4_conntrack_entries():
 def test_cleanup():
     # Remove all conntrack entries where IPv4 source is TESTNET1, TESTNET2 or TESTNET3
     # NOTE if we created a lot of entries with a short timeout, some may expire between dumping the table and removing the table entries
+    destroyed = 0
     conntrack = Conntrack()
     (table, count) = conntrack.dump_table(AF_INET)
     for entry in table:
         if entry.orig_ipv4_src in (TESTNET1, TESTNET2, TESTNET3):
             entry.destroy()
+            destroyed += 1
+    assert destroyed > 0
 
 def test_delayed_cleanup():
     # Remove all conntrack entries where IPv4 source is TESTNET1, TESTNET2 or TESTNET3
     # now with a delay between dumping the table and removing entries
     # ...so we expect a RuntimeError
+    found = 0
+    destroyed = 0
     v4 = prepare_v4()
     v4.timeout = 2
     v4.create()
@@ -150,5 +155,10 @@ def test_delayed_cleanup():
     sleep(3)
     for entry in table:
         if entry.orig_ipv4_src in (TESTNET1, TESTNET2, TESTNET3):
+            found += 1
             with pytest.raises(RuntimeError):
                 entry.destroy()
+                destroyed += 1
+    # We expect 1 entry to be found, but none (successfully) destroyed
+    assert found == 1
+    assert destroyed == 0
