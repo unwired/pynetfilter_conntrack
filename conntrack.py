@@ -4,6 +4,7 @@ from pynetfilter_conntrack import Conntrack, NFCT_O_DEFAULT, NFCT_O_XML
 from socket import AF_INET, AF_INET6
 from subprocess import call
 import sys
+import logging
 
 OUTPUT_FORMAT = {
     "list": NFCT_O_DEFAULT,
@@ -54,5 +55,6 @@ def main():
         print("Interrupted.")
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     main()
 
