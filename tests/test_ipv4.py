@@ -1,6 +1,5 @@
 import pytest
 
-
 from pynetfilter_conntrack import (
     Conntrack, ConntrackEntry,
     IPPROTO_TCP,
@@ -8,6 +7,7 @@ from pynetfilter_conntrack import (
     NFCT_SOPT_SETUP_ORIGINAL,
     TCP_CONNTRACK_ESTABLISHED, TCP_CONNTRACK_LISTEN
 )
+from pynetfilter_conntrack.exceptions import (GenericNFCTError, ConntrackEntryExistsError, ConntrackEntryNotFoundError)
 from socket import AF_INET, AF_INET6
 from IPy import IP
 from random import randrange
@@ -62,13 +62,13 @@ def test_create_ipv4_conntrack_again():
 
 def test_create_duplicate_ipv4_conntrack():
     # Trying to create the same entry again will raise an error
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ConntrackEntryExistsError):
         v4 = prepare_v4()
         v4.create()
 
 def test_get_nonexistent_ipv4_conntrack(dstip=TESTNET2):
     # Trying to get a nonexistent entry should raise an error
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ConntrackEntryNotFoundError):
         v4 = prepare_v4()
         v4.orig_ipv4_dst = TESTNET2
         v4.get()
@@ -85,7 +85,7 @@ def test_update_ipv4_conntrack_mark():
 
 def test_create_ipv4_conntrack_swapped():
     # We expect a failure if we try to create the reverse for an existing flow entry
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ConntrackEntryExistsError):
         v4 = prepare_v4(swapip=True, swapport=True)
         v4.create()
 
@@ -156,7 +156,7 @@ def test_delayed_cleanup():
     for entry in table:
         if entry.orig_ipv4_src in (TESTNET1, TESTNET2, TESTNET3):
             found += 1
-            with pytest.raises(RuntimeError):
+            with pytest.raises(ConntrackEntryNotFoundError):
                 entry.destroy()
                 destroyed += 1
     # We expect 1 entry to be found, but none (successfully) destroyed
