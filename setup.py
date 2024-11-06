@@ -3,7 +3,8 @@
 
 from os import path
 import sys
-from imp import load_source
+import importlib.util
+
 if "--setuptools" in sys.argv:
     sys.argv.remove("--setuptools")
     from setuptools import setup
@@ -13,7 +14,9 @@ else:
     use_setuptools = False
 
 # Retrieve revision
-pynetfilter_conntrack = load_source("version", path.join("pynetfilter_conntrack", "version.py"))
+spec = importlib.util.spec_from_file_location("version", path.join("pynetfilter_conntrack", "version.py"))
+pynetfilter_conntrack = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(pynetfilter_conntrack)
 
 DESCRIPTION = "pynetfilter_conntrack is a Python binding of libnetfilter_conntrack"
 LONG_DESCRIPTION = open("README.rst").read() + open("INSTALL").read() + open("ChangeLog").read()
@@ -58,4 +61,3 @@ setup(
     scripts=["conntrack.py"],
     **option
 )
-
