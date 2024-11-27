@@ -1,4 +1,4 @@
-from pynetfilter_conntrack import NFCT_Q_CREATE, NFCT_T_UNKNOWN
+from pynetfilter_conntrack import NFCT_Q_CREATE, NFCT_Q_GET, NFCT_Q_UPDATE, NFCT_T_UNKNOWN
 from pynetfilter_conntrack.ctypes_errno import get_errno
 from os import strerror
 
@@ -26,6 +26,12 @@ class EntryBase(object):
 
     def create(self):
         self.query(NFCT_Q_CREATE)
+
+    def update(self):
+        self.query(NFCT_Q_UPDATE)
+
+    def get(self):
+        self.query(NFCT_Q_GET)
 
     def __str__(self):
         return self.format()

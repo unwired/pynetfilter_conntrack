@@ -19,7 +19,7 @@ def event_cb(msgtype, ct, data):
         return NFCT_CB_STOP
 
     entry = ExpectEntry(data, ct, msgtype, destroy=False)
-    print entry
+    print(entry)
 
     return NFCT_CB_CONTINUE
 
@@ -58,7 +58,7 @@ def create_conntrack():
     mask.orig_port_src = 0xffff
     mask.orig_port_dst = 0xffff
 
-    print "add"
+    print("add")
     exp = ExpectEntry.new(expect)
     ATTR_EXP_MASTER = 0
     ATTR_EXP_EXPECTED = 1
@@ -68,7 +68,7 @@ def create_conntrack():
     nfexp_set_attr(exp._handle, ATTR_EXP_EXPECTED, expected._handle)
     nfexp_set_attr(exp._handle, ATTR_EXP_MASK, mask._handle)
     nfexp_set_attr_u32(exp._handle, ATTR_EXP_TIMEOUT, 200)
-    print "FINAL: Create entry"
+    print("FINAL: Create entry")
     exp.create()
 
 def flush_expect():
@@ -78,14 +78,14 @@ def flush_expect():
 def dump_expect():
     expect = Expect()
     for entry in expect.dump_table():
-        print entry
+        print(entry)
 
 def watch_expect():
     try:
         expect = Expect()
         expect.catch(event_cb)
     except KeyboardInterrupt:
-        print "Interrupted."
+        print("Interrupted.")
 
 def main():
     flush_expect()

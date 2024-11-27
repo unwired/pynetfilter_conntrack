@@ -2,6 +2,7 @@ from pynetfilter_conntrack import \
     nfct_open, nfct_close
 from pynetfilter_conntrack.ctypes_errno import get_errno
 from os import strerror
+from .exceptions import GenericNFCTError, ConntrackEntryExistsError, ConntrackEntryNotFoundError
 
 class ConntrackBase(object):
     def __init__(self, subsys, subscriptions):
@@ -24,7 +25,13 @@ class ConntrackBase(object):
     def _error(self, func_name):
         errno = get_errno()
         err_msg = strerror(errno)
-        raise RuntimeError("%s() failure: %s" % (func_name, err_msg))
+        descriptive_message = "%s() failure: %s (%d)" % (func_name, err_msg, errno)
+        if errno == 2:
+            raise ConntrackEntryNotFoundError(descriptive_message)
+        elif errno == 17:
+            raise ConntrackEntryExistsError(descriptive_message)
+        else:
+            raise GenericNFCTError(descriptive_message)
 
     def __del__(self):
         """Destroy conntrack object"""
